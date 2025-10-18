@@ -1,0 +1,2 @@
+This software includes code licensed under the MIT License.
+Copyright (c) 2023 Imamuzzaki Abu Salam.
