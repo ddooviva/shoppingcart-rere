@@ -2,13 +2,12 @@
 export const theme = {
     light: {
         bg: "#ffffff",
-        llgrey: '#f1f3f5',
-        dgrey: '#dcdedf',
+        llgrey: '#f3f3f3',
+        dgrey: '#dddddd',
         ddgrey: "#c0c0c0",
         grey: "#ababab",
         dddgrey: "#3A3D42",
-        black: "#222529",
-        point: "#FF3F00",
+        black: "#252525",
         lpoint: "#ff571f",
         llpoint: "#ffb396",
         modalbg: '#00000044'
@@ -22,8 +21,6 @@ export const theme = {
         grey: "#ababab",
         dddgrey: "#e7e7e7",
         black: "#ffffff",
-
-        wave: "black",
         lpoint: "#ff571f",
         llpoint: "#ff4406",
         modalbg: '#00000099'

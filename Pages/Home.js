@@ -22,9 +22,11 @@ import { LogBox } from 'react-native';
 import Octicons from '@expo/vector-icons/Octicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Starlist from './starlist';
+import { Swipeable } from 'react-native-gesture-handler';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const DisplayWidth = Dimensions.get("window").width
-
+const DisplayHeight = Dimensions.get('window').height
 
 export default function Home() {
     const { color, setColor } = useColor();
@@ -237,11 +239,22 @@ export default function Home() {
     }
     const PlaceItem = ({ title, drag, id }) => {
         const [PEdit, setPEdit] = useState(false);
-        const [placeText, setPlaceText] = useState("");
+        const [placeText, setPlaceText] = useState(title);
         const placeEdit = (id) => {
-            const newPlaceList = tempPlaceList.map((place) => place.id === id ? { ...place, text: placeText } : place)
-            setTempPlaceList(newPlaceList)
+            if (placeText !== '') {
+                const newPlaceList = tempPlaceList.map((place) => place.id === id ? { ...place, text: placeText } : place)
+                setTempPlaceList(newPlaceList)
+                setPEdit(false)
+            }
+            else { setPEdit(false) }
         }
+        const renderRightActions = () => (
+            <View style={{ paddingHorizontal: 10, justifyContent: 'center' }}>
+                <Pressable onPress={() => placeDelete(id)} hitSlop={{ top: 10, left: 10, right: 10, bottom: 10 }} >
+                    <Entypo name="trash" size={fontTheme[fontSize].m} color={theme[color].lpoint} />
+                </Pressable>
+            </View>
+        );
         const placeDelete = (id) => {
             const onDletePress = () => {
                 const newPlaceList = tempPlaceList.filter((placeList) => placeList.id !== id)
@@ -250,20 +263,15 @@ export default function Home() {
                 setTempList(newList)
                 newPlaceList.length < 6 ? (setNo(false)) : null
             }
-            return (
-                Alert.alert("장소 삭제", '이 장소와 그에 속한 모든 내용을 삭제하시겠습니까?', [
-                    { text: '아니오', style: 'cancel' },
-                    { text: "네", style: 'destructive', onPress: () => onDletePress() },
+            onDletePress()
 
-                ], { cancelable: true })
-            )
         }
         return (
-            <TouchableOpacity style={{ ...styles.headerList, height: fontSize === 'ss' ? 44.5 : fontSize === 'mm' ? 48 : 50.5, backgroundColor: theme[color].bg, marginVertical: 5, width: fontSize === 'll' ? 180 : 160, flexDirection: 'row', justifyContent: 'space-between', borderStyle: 'dashed' }} onLongPress={drag}>
-                <Pressable onPress={() => setPEdit(true)} hitSlop={{ top: 10, left: 10, right: 10, bottom: 10 }} ><Entypo name="pencil" size={20} color={theme[color].lpoint} /></Pressable>
-                {PEdit ? <TextInput autoFocus onChangeText={(a) => { const b = a.slice(0, 6); setPlaceText(b) }} onSubmitEditing={() => { setPEdit(false); placeEdit(id); }} style={{ ...styles.headerText, height: 22, fontSize: fontTheme[fontSize].m }} value={placeText}></TextInput> : <Text style={{ ...styles.headerText, fontSize: fontTheme[fontSize].m, marginTop: Platform.OS === 'android' ? -6 : 0 }}>{title}</Text>}
-                <Pressable onPress={() => placeDelete(id)} hitSlop={{ top: 10, left: 10, right: 10, bottom: 10 }} ><Entypo name="trash" size={18} color={theme[color].lpoint} /></Pressable>
-            </TouchableOpacity>
+            <Swipeable renderRightActions={renderRightActions} enabled={!PEdit}>
+                <TouchableOpacity style={{ ...styles.headerList, height: fontSize === 'ss' ? 44.5 : fontSize === 'mm' ? 48 : 50.5, backgroundColor: (`${theme[color].llpoint}` + `99`), marginVertical: 5, width: fontSize === 'll' ? 180 : 160, flexDirection: 'row', justifyContent: 'center', borderStyle: 'dashed' }} onPress={() => setPEdit(true)} delayLongPress={500} onLongPress={drag}>
+                    {PEdit ? <TextInput autoFocus onChangeText={(a) => { const b = a.slice(0, 6); setPlaceText(b) }} onBlur={() => { placeEdit(id); }} onSubmitEditing={() => { placeEdit(id); }} style={{ ...styles.headerText, fontSize: fontTheme[fontSize].m }} value={placeText} defaultValue={title} ></TextInput> : <Text style={{ ...styles.headerText, fontSize: fontTheme[fontSize].m, }}>{title}</Text>}
+                </TouchableOpacity>
+            </Swipeable>
         )
     };
     const ListItem = forwardRef(({ id, text, checked }, ref) => {
@@ -291,23 +299,22 @@ export default function Home() {
         }
 
         return (
-            <TouchableOpacity key={id} ref={ref} style={{ ...styles.listItem, paddingVertical: 0 }} activeOpacity={1} onPress={() => { console.log("clicked"); onCheck(id) }} >
+            <View ref={ref} key={id} style={{ ...styles.listItem, paddingVertical: 0 }} >
                 <View style={{ width: DisplayWidth / 6, flexDirection: 'row-reverse', borderRightWidth: 1, borderColor: theme[color].dgrey, paddingVertical: 4, }}>
                     <TouchableOpacity style={{ marginRight: 8 }} onPress={() => giveStar(id)} hitSlop={{ top: 20, bottom: 20, left: 30, right: 40 }}><FontAwesome6 name={"star-of-life"} size={fontTheme[fontSize].l - 1.5} color={list[id].star ? list[id].checked ? theme[color].dgrey : theme[color].lpoint : theme[color].dgrey} /></TouchableOpacity>
-
                 </View>
-                <View style={{ width: DisplayWidth * 4 / 6, flexDirection: 'row', justifyContent: 'space-between' }}>
+                <TouchableOpacity delayLongPress={150} onLongPress={() => { console.log('longpress') }} hitSlop={{ top: 5, bottom: 5, left: 10, right: 10 }} activeOpacity={1} onPress={() => { console.log("clicked"); onCheck(id) }} style={{ width: DisplayWidth * 4 / 6, flexDirection: 'row', justifyContent: 'space-between' }}>
                     {!LEdit ?
-                        <><WavyUnderline LEdit={LEdit} text={list[id].text} checked={list[id].checked}></WavyUnderline>
-                        </> :
-                        <><TextInput value={listT} onChangeText={(text) => { setListT(text); }} onSubmitEditing={() => saveListT()} onBlur={() => saveListT()} autoFocus style={{ ...styles.listText, minWidth: DisplayWidth * 4 / 6 }} textAlignVertical='center' />
-                        </>}
-                </View>
+                        <WavyUnderline LEdit={LEdit} text={list[id].text} checked={list[id].checked}></WavyUnderline>
+                        :
+                        <TextInput value={listT} onChangeText={(text) => { setListT(text); }} onSubmitEditing={() => saveListT()} onBlur={() => saveListT()} autoFocus style={{ ...styles.listText, minWidth: DisplayWidth * 4 / 6 }} textAlignVertical='center' />
+                    }
+                </TouchableOpacity>
                 <View style={{ flexDirection: 'row', width: DisplayWidth / 6 }}>
                     <TouchableOpacity style={{ marginRight: 7 }} onPress={() => !LEdit ? editListItem(id) : saveListT()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>{!LEdit ? <Entypo name="pencil" size={20} color={theme[color].dgrey} /> : <Ionicons name="return-down-back" size={fontTheme[fontSize].l + 3} color={theme[color].dddgrey} />}</TouchableOpacity>
                     <TouchableOpacity onPress={() => deleteListItem(id)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}><Entypo name="circle-with-cross" size={20} color={theme[color].dgrey} /></TouchableOpacity>
                 </View>
-            </TouchableOpacity>
+            </View>
         )
     });
     const Modal4 = () => {
@@ -357,7 +364,7 @@ export default function Home() {
                         <TouchableOpacity onPress={() => { onInitialOK(); }} style={{ ...styles.modalminiButton, minWidth: 102 }}><Text style={{ fontSize: fontTheme[fontSize].m, color: theme[color].black }}>실행</Text></TouchableOpacity>
                     </View>
                 </View>
-                <Text style={{ fontSize: fontTheme[fontSize].s, marginVertical: 10, color: theme[color].lpoint }}>* 어플이 느려지면 초기화 해주세요.</Text>
+                <Text style={{ fontSize: fontTheme[fontSize].s - 2, marginVertical: 10, color: theme[color].lpoint }}>* 어플이 느려지면 초기화 해주세요.</Text>
                 <View style={{ flexDirection: 'row', marginTop: 20 }}>
                     <View style={{ marginHorizontal: 5 }}>
                         <Button onPress={() => { setModal4(false); setModalSet(false) }} title="확인" colorT={theme[color].lpoint} />
@@ -396,16 +403,16 @@ export default function Home() {
     const onPlaceOK = () => {
         if (tempPlaceList === placeList) { setModal2(false); setModalSet(false); setInfo(false); }
         else (
-            Alert.alert("변경 적용", "변경 사항을 적용하시겠습니까?", [
-                { text: '아니오', style: 'destructive' },
-                { text: '네', style: 'default', onPress: () => { setModal2(false); setModalSet(false); setInfo(false); setPlaceList(tempPlaceList); setList(tempList); } }
+            Alert.alert("적용", "설정을 완료하시겠습니까?", [
+                { text: '취소', style: 'destructive' },
+                { text: '확인', style: 'default', onPress: () => { setModal2(false); setModalSet(false); setInfo(false); setPlaceList(tempPlaceList); setList(tempList); } }
             ], { cancelable: true }))
     }
     const onPlaceX = () => {
         if (tempPlaceList === placeList) { setModal2(false); setModalSet(false); setInfo(false); }
-        else (Alert.alert("원래대로", "변경 사항을 취소하고 이전 상태로 되돌리시겠습니까?", [
-            { text: '아니오', style: 'destructive' },
-            { text: '네', style: 'default', onPress: () => { setModal2(false); setModalSet(false); setInfo(false); } },
+        else (Alert.alert("수정 중단", "저장하지 않은 변경 사항이 사라집니다. 그래도 나갈까요?", [
+            { text: '계속 수정', style: 'destructive' },
+            { text: '나가기', style: 'default', onPress: () => { setModal2(false); setModalSet(false); setInfo(false); } },
         ], { cancelable: true }))
     }
     const styles = StyleSheet.create({
@@ -549,12 +556,12 @@ export default function Home() {
 
 
 
-                    <Pressable onpress={Keyboard.dismiss} >
+                    <Pressable onPress={Keyboard.dismiss} >
                         <Modal visible={modal2} transparent>
-                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00000066', overflow: 'hidden' }}>
-                                <Pressable onpress={Keyboard.dismiss} style={{ backgroundColor: theme[color].bg, borderRadius: 15, width: '85%', paddingVertical: 20, justifyContent: 'center', alignItems: 'center' }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                                        <Text style={{ fontSize: fontTheme[fontSize].l, fontWeight: 600, color: theme[color].black }}>장소 수정</Text>
+                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00000066', }}>
+                                <Pressable onPress={Keyboard.dismiss} style={{ backgroundColor: theme[color].bg, borderRadius: 15, paddingHorizontal: 40, paddingVertical: 20, justifyContent: 'center', alignItems: 'center' }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
+                                        <Text style={{ fontSize: fontTheme[fontSize].l, fontWeight: 600, color: theme[color].black, marginLeft: 10, }}>  장 볼 장소 {`${tempPlaceList.length}` + "/" + `${maxPlaceListLength}`}</Text>
                                         <TouchableOpacity onPress={() => setInfo(!info)}><MaterialIcons name="info-outline" size={20} color={theme[color].black} style={{ marginBottom: 2, marginTop: 2, marginLeft: 5 }} /></TouchableOpacity>
                                     </View>
                                     {info ? <><Text style={{ fontSize: fontTheme[fontSize].s, color: theme[color].black }}>1)  장소 버튼을 꾹 누른 후 드래그하여</Text>
@@ -562,37 +569,39 @@ export default function Home() {
                                         <Text style={{ fontSize: fontTheme[fontSize].s, marginBottom: 10, color: theme[color].black }}>{"2)  장소는 최대 " + `${maxPlaceListLength}` + "개까지 등록 가능합니다."}</Text>
                                         <Text style={{ fontSize: fontTheme[fontSize].s, marginBottom: 10, color: theme[color].black }}>3)  결제 시 장소 무제한 등록 및 광고 제거가 가능합니다. </Text></>
                                         :
-                                        <View style={{ backgroundColor: theme[color].llgrey, borderRadius: 20, padding: 10, width: '70%', justifyContent: 'center', alignItems: 'center' }}>
-                                            {tempPlaceList.length === maxPlaceListLength ? <TouchableWithoutFeedback onPress={gotopay}><View style={{ ...styles.headerList, height: fontSize === 'ss' ? 44.5 : fontSize === 'mm' ? 48 : 50.5, backgroundColor: theme[color].dgrey, width: fontSize === 'll' ? 180 : 160, flexDirection: 'row', marginVertical: 5, justifyContent: 'center', borderstyle: 'dashed' }}><FontAwesome name="plus" size={20} color={theme[color].ddgrey} /></View></TouchableWithoutFeedback>
+                                        <View style={{ backgroundColor: theme[color].llgrey, borderRadius: 20, padding: 10, width: '70%', justifyContent: 'flex-start', alignItems: 'center', overflow: 'hidden', }}>
+                                            {tempPlaceList.length === maxPlaceListLength ? null
                                                 :
-                                                <View style={{ ...styles.headerList, height: fontSize === 'ss' ? 44.5 : fontSize === 'mm' ? 48 : 50.5, backgroundColor: theme[color].llpoint, width: fontSize === 'll' ? 180 : 160, marginVertical: 5, flexDirection: 'row', justifyContent: 'center' }}>
+                                                <View style={{ ...styles.headerList, borderStyle: 'dashed', height: fontSize === 'ss' ? 44.5 : fontSize === 'mm' ? 48 : 50.5, backgroundColor: theme[color].bg, width: fontSize === 'll' ? 180 : 160, marginVertical: 5, flexDirection: 'row', justifyContent: 'center' }}>
                                                     <TextInput
                                                         placeholder={"새 장소 입력"}
-                                                        placeholderTextColor={theme[color].bg}
+                                                        placeholderTextColor={theme[color].black}
                                                         value={text}
-                                                        onChangeText={(a) => { const b = a.slice(0, 6); setText(b); }}
-                                                        style={{ ...styles.headerText, textAlign: 'center', fontWeight: 500, color: theme[color].bg, fontWeight: '600', fontSize: fontTheme[fontSize].m }}
+                                                        onChangeText={(a) => { setText(a); }}
+                                                        style={{ flex: 1, marginRight: 0, textAlign: 'center', color: theme[color].black, fontSize: fontTheme[fontSize].m }}
                                                         onSubmitEditing={() => onSubmit(text)}
                                                         returnKeyType='go'
-                                                        blurOnSubmit={true}
+                                                        blurOnSubmit={tempPlaceList.length === maxPlaceListLength ? true : false}
+                                                        maxLength={6}
                                                     />
                                                     <TouchableOpacity onPress={() => onSubmit(text)}
-                                                        style={{ marginRight: -10 }} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
-                                                        <Ionicons name="return-down-back" size={fontTheme[fontSize].l + 3} color={theme[color].bg} />
+                                                        style={{ marginRight: -10, position: 'absolute', right: 20, }} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+                                                        <Ionicons name="return-down-back" size={fontTheme[fontSize].l} color={theme[color].black} />
                                                     </TouchableOpacity>
                                                 </View>}
                                             <DraggableFlatList
-                                                showsVerticalScrollIndicator={false}
+                                                containerStyle={{ height: tempPlaceList.length * 40 }}
+                                                showsVerticalScrollIndicator={true}
                                                 scrollEnabled={true}
-                                                containerStyle={{ height: Dimensions.get("window").height * 0.3 }}
                                                 data={tempPlaceList}
                                                 renderItem={({ item, drag }) => <PlaceItem title={item.text} id={item.id} drag={drag} />}
                                                 keyExtractor={item => item.id}
                                                 onDragEnd={({ data }) => { setTempPlaceList(data); }}
                                                 onDragBegin={() => console.log('dragbegin')}
+                                                indicatorStyle='default'
+                                                persistentScrollbar={true}
                                             />
                                         </View>}
-                                    <Text style={{ fontSize: fontTheme[fontSize].s, color: theme[color].ddgrey, marginTop: 5 }}>{"장소 : " + `${tempPlaceList.length}` + "/" + `${maxPlaceListLength}`}</Text>
                                     {info ?
                                         <View style={{ flexDirection: 'row', marginTop: 10 }}>
                                             <View style={{ marginHorizontal: 5 }}>
@@ -638,7 +647,7 @@ export default function Home() {
                                 style={{ flex: 1 }}
                                 horizontal
                                 pagingEnabled
-                                spee
+
                                 onScroll={handleMainScroll}
                                 scrollEventThrottle={10}
                                 showsHorizontalScrollIndicator={false}
@@ -671,11 +680,10 @@ export default function Home() {
                                             directionalLockEnabled={true}
                                             onScrollBeginDrag={() => { Keyboard.dismiss(); }}
                                         >
-                                            {sortedList(listN(item.id)).map(([listID, listITEM]) =>
-                                                <DraxView key={listID} longPressDelay={200} draggingStyle={{ opacity: 0.2 }} hoverDragReleasedStyle={{ display: 'none' }} hoverDraggingStyle={{ opacity: 0.2 }} onDragStart={() => { console.log('start drag', list[listID].text); setScrollAble(false); }} onDragEnd={() => setScrollAble(true)} onDragDrop={() => setScrollAble(true)} payload={listID}>
-                                                    <View>
-                                                        <ListItem id={listID} text={list[listID].text} checked={list[listID].checked}></ListItem>
-                                                    </View>
+                                            {sortedList(listN(item.id)).map(([listID]) =>
+                                                <DraxView payload={listID} key={listID} longPressDelay={200} draggingStyle={{ opacity: 0.2 }} hoverDragReleasedStyle={{ display: 'none' }} hoverDraggingStyle={{ opacity: 0.2 }} onDragStart={() => { console.log('start drag', list[listID].text); setScrollAble(false); }} onDragEnd={() => setScrollAble(true)} onDragDrop={() => setScrollAble(true)} >
+                                                    <ListItem id={listID} text={list[listID].text} checked={list[listID].checked} />
+
                                                 </DraxView>)}
                                             <View style={{ borderBottomColor: theme[color].lpoint, borderBottomWidth: 1, width: DisplayWidth, alignItems: 'center', marginBottom: 10 }}>
                                                 <View style={{ flexDirection: 'row', ...styles.listItem, borderBottomWidth: 1, borderBottomColor: theme[color].lpoint, marginBottom: 5, height: fontSize === 'll' ? 34.5 : fontSize === 'mm' ? 31.5 : 28.5, paddingVertical: 0 }}>
