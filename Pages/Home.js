@@ -12,7 +12,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Feather from '@expo/vector-icons/Feather';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DraxProvider, DraxScrollView, DraxView } from 'react-native-drax';
-import DraggableFlatList from 'react-native-draggable-flatlist';
+import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
 import Entypo from '@expo/vector-icons/Entypo';
 import { useColor } from './ColorContext';
 import { useFontSize } from './FontSizeContext';
@@ -237,7 +237,7 @@ export default function Home() {
     const gotopay = () => {
         console.log('결제유도')
     }
-    const PlaceItem = ({ title, drag, id }) => {
+    const PlaceItem = ({ title, drag, isActive, id }) => {
         const [PEdit, setPEdit] = useState(false);
         const [placeText, setPlaceText] = useState(title);
         const placeEdit = (id) => {
@@ -267,11 +267,13 @@ export default function Home() {
 
         }
         return (
-            <Swipeable renderRightActions={renderRightActions} enabled={!PEdit}>
-                <TouchableOpacity style={{ ...styles.headerList, height: fontSize === 'ss' ? 44.5 : fontSize === 'mm' ? 48 : 50.5, backgroundColor: (`${theme[color].llpoint}` + `99`), marginVertical: 5, width: fontSize === 'll' ? 180 : 160, flexDirection: 'row', justifyContent: 'center', borderStyle: 'dashed' }} onPress={() => setPEdit(true)} delayLongPress={500} onLongPress={drag}>
-                    {PEdit ? <TextInput autoFocus onChangeText={(a) => { const b = a.slice(0, 6); setPlaceText(b) }} onBlur={() => { placeEdit(id); }} onSubmitEditing={() => { placeEdit(id); }} style={{ ...styles.headerText, fontSize: fontTheme[fontSize].m }} value={placeText} defaultValue={title} ></TextInput> : <Text style={{ ...styles.headerText, fontSize: fontTheme[fontSize].m, }}>{title}</Text>}
-                </TouchableOpacity>
-            </Swipeable>
+            <ScaleDecorator>
+                <Swipeable renderRightActions={renderRightActions} enabled={!isActive}>
+                    <TouchableOpacity style={{ ...styles.headerList, paddingVertical: 8, opacity: isActive ? 0.9 : 1, backgroundColor: isActive ? theme[color].lpoint : theme[color].bg, marginVertical: 2, width: fontSize === 'll' ? 160 : 140, flexDirection: 'row', justifyContent: 'center' }} onPress={() => setPEdit(true)} delayLongPress={500} onLongPress={drag}>
+                        {PEdit ? <TextInput autoFocus onChangeText={(a) => { const b = a.slice(0, 6); setPlaceText(b) }} onBlur={() => { placeEdit(id); }} onSubmitEditing={() => { placeEdit(id); }} style={{ ...styles.headerText, fontSize: fontTheme[fontSize].m }} value={placeText} defaultValue={title} ></TextInput> : <Text style={{ ...styles.headerText, fontSize: fontTheme[fontSize].m, }}>{title}</Text>}
+                    </TouchableOpacity>
+                </Swipeable>
+            </ScaleDecorator>
         )
     };
     const ListItem = forwardRef(({ id, text, checked }, ref) => {
@@ -572,7 +574,7 @@ export default function Home() {
                                         <View style={{ backgroundColor: theme[color].llgrey, borderRadius: 20, padding: 10, width: '70%', justifyContent: 'flex-start', alignItems: 'center', overflow: 'hidden', }}>
                                             {tempPlaceList.length === maxPlaceListLength ? null
                                                 :
-                                                <View style={{ ...styles.headerList, borderStyle: 'dashed', height: fontSize === 'ss' ? 44.5 : fontSize === 'mm' ? 48 : 50.5, backgroundColor: theme[color].bg, width: fontSize === 'll' ? 180 : 160, marginVertical: 5, flexDirection: 'row', justifyContent: 'center' }}>
+                                                <View style={{ ...styles.headerList, borderStyle: 'dashed', paddingVertical: 8, backgroundColor: theme[color].bg, width: fontSize === 'll' ? 160 : 140, marginVertical: 5, flexDirection: 'row', justifyContent: 'center' }}>
                                                     <TextInput
                                                         placeholder={"새 장소 입력"}
                                                         placeholderTextColor={theme[color].black}
@@ -590,11 +592,16 @@ export default function Home() {
                                                     </TouchableOpacity>
                                                 </View>}
                                             <DraggableFlatList
-                                                containerStyle={{ height: tempPlaceList.length * 40 }}
+                                                containerStyle={{
+                                                    flexGrow: 0,           // 늘어나지 마라
+                                                    alignSelf: 'center',   // 👈 핵심: 내 키만큼만 차지하고 중앙에 있어라
+                                                    width: '100%',     // 너비는 꽉 채우되
+                                                }}
+                                                contentContainerStyle={{ flexGrow: 0, marginHorizontal: 10 }}
                                                 showsVerticalScrollIndicator={true}
                                                 scrollEnabled={true}
                                                 data={tempPlaceList}
-                                                renderItem={({ item, drag }) => <PlaceItem title={item.text} id={item.id} drag={drag} />}
+                                                renderItem={({ item, drag, isActive }) => <PlaceItem title={item.text} id={item.id} drag={drag} isActive={isActive} />}
                                                 keyExtractor={item => item.id}
                                                 onDragEnd={({ data }) => { setTempPlaceList(data); }}
                                                 onDragBegin={() => console.log('dragbegin')}
