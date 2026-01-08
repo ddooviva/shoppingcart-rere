@@ -293,7 +293,7 @@ export default function Home() {
         return (
             <TouchableOpacity key={id} ref={ref} style={{ ...styles.listItem, paddingVertical: 0 }} activeOpacity={1} onPress={() => { console.log("clicked"); onCheck(id) }} >
                 <View style={{ width: DisplayWidth / 6, flexDirection: 'row-reverse', borderRightWidth: 1, borderColor: theme[color].dgrey, paddingVertical: 4, }}>
-                    <TouchableOpacity style={{ marginRight: 8 }} onPress={() => giveStar(id)} hitSlop={{ top: 20, bottom: 20, left: 30, right: 40 }}><FontAwesome6 name={"star-of-life"} size={fontTheme[fontSize].l - 1.5} color={list[id].star ? list[id].checked ? theme[color].ddgrey : theme[color].lpoint : theme[color].dgrey} /></TouchableOpacity>
+                    <TouchableOpacity style={{ marginRight: 8 }} onPress={() => giveStar(id)} hitSlop={{ top: 20, bottom: 20, left: 30, right: 40 }}><FontAwesome6 name={"star-of-life"} size={fontTheme[fontSize].l - 1.5} color={list[id].star ? list[id].checked ? theme[color].dgrey : theme[color].lpoint : theme[color].dgrey} /></TouchableOpacity>
 
                 </View>
                 <View style={{ width: DisplayWidth * 4 / 6, flexDirection: 'row', justifyContent: 'space-between' }}>

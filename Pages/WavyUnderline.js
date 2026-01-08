@@ -1,10 +1,9 @@
 import React from 'react';
-import Svg, { Path } from 'react-native-svg';
 import { theme } from './color';
 import { useColor } from './ColorContext';
 import { useFontSize } from './FontSizeContext';
 import { fontSize, fontTheme } from './font';
-import { Animated, useColorScheme, ImageBackground, RefreshControl, Keyboard, KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, Dimensions, Modal, Platform, Pressable } from 'react-native';
+import { Text, View, Dimensions, Modal, Platform, Pressable } from 'react-native';
 
 function getVisualLength(text) {
     return [...text].reduce((sum, char) => {
