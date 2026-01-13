@@ -57,7 +57,26 @@ export default function Home() {
     const [change, setChange] = useState(false);
     const systemColorScheme = useColorScheme();  // 시스템 테마 가져오기
     const [starList, setStarList] = useState(false);
+    const fadeAnim = useRef(new Animated.Value(0)).current; // 초기값 0 (투명)
+    const clear = async () => { await AsyncStorage.clear(); }
 
+    useEffect(() => {
+        if (starList) {
+            // 2. starList가 true가 되면 투명도를 1로 (나타나기)
+            Animated.timing(fadeAnim, {
+                toValue: 1,
+                duration: 400, // 0.4초
+                useNativeDriver: true,
+            }).start();
+        } else {
+            // 3. 닫힐 때 다시 0으로 (선택 사항: 모달이 즉시 닫히면 안 보일 수 있음)
+            Animated.timing(fadeAnim, {
+                toValue: 0,
+                duration: 400, // 0.4초
+                useNativeDriver: true,
+            }).start();
+        }
+    }, [starList]);
     useEffect(() => {
         loadUserSetting().then(() => loadList()).then(() => setIsLoaded(true))
     }, [])
@@ -71,6 +90,7 @@ export default function Home() {
     useEffect(() => {
         setTimeout(scrollViewRef.current[placeNum]?.scrollTo({ y: 0, animated: false }), 100)
     }, [placeNum])
+
     const maxPlaceListLength = 6;
     const saveUserSetting = async (color, fontSize) => {
         await AsyncStorage.setItem("@color", color);
@@ -407,14 +427,14 @@ export default function Home() {
         else (
             Alert.alert("적용", "설정을 완료하시겠습니까?", [
                 { text: '취소', style: 'destructive' },
-                { text: '확인', style: 'default', onPress: () => { setModal2(false); setModalSet(false); setInfo(false); setPlaceList(tempPlaceList); setList(tempList); } }
+                { text: '확인', style: 'default', onPress: () => { setModal2(false); setModalSet(false); setInfo(false); setPlaceList(tempPlaceList); setList(tempList); setText(""); } }
             ], { cancelable: true }))
     }
     const onPlaceX = () => {
         if (tempPlaceList === placeList) { setModal2(false); setModalSet(false); setInfo(false); }
         else (Alert.alert("수정 중단", "저장하지 않은 변경 사항이 사라집니다. 그래도 나갈까요?", [
             { text: '계속 수정', style: 'destructive' },
-            { text: '나가기', style: 'default', onPress: () => { setModal2(false); setModalSet(false); setInfo(false); } },
+            { text: '나가기', style: 'default', onPress: () => { setModal2(false); setModalSet(false); setInfo(false); setText(""); } },
         ], { cancelable: true }))
     }
     const styles = StyleSheet.create({
@@ -516,18 +536,19 @@ export default function Home() {
             width: 30, height: 30, margin: 3, backgroundColor: theme[color].dgrey, justifyContent: 'center', alignItems: 'center', borderRadius: 5
         }
     })
+
     return (
         <ImageBackground
             source={color === "light" ? require('../assets/paper.jpg') : require('../assets/paper-dark.jpg')}
             style={{ flex: 1, resizeMode: 'cover', justifyContent: 'center', zIndex: -2, width: '100%' }}
         >
             <View style={{ zindex: 3, position: 'absolute', bottom: 20, right: 20 }}>
-                <TouchableOpacity onPress={() => setStarList(!starList)} style={{ zIndex: 4, borderColor: theme[color].dgrey, borderWidth: 1, backgroundColor: theme[color].bg, width: 50, height: 50, borderRadius: 35, justifyContent: 'center', alignItems: 'center' }}>
-                    <FontAwesome6 name={"star-of-life"} size={25} color={starList ? theme[color].llpoint : theme[color].dgrey} />
-                </TouchableOpacity>
+                <Pressable onPress={() => setStarList(!starList)} style={{ zIndex: 4, borderColor: starList ? theme[color].llpoint : theme[color].dgrey, borderWidth: 1, backgroundColor: theme[color].bg, width: 50, height: 50, borderRadius: 35, justifyContent: 'center', alignItems: 'center' }}>
+                    <FontAwesome6 name={"star-of-life"} size={25} color={starList ? theme[color].lpoint : theme[color].dgrey} />
+                </Pressable>
             </View>
-            <View style={{ zindex: 3, position: 'absolute', bottom: 30, right: 30 }}>
-                {starList ? <Starlist list={list} setList={setList} placeList={placeList} onRefresh={onRefresh} refreshing={refreshing} /> : null}
+            <View style={{ zindex: 0, position: 'absolute', bottom: 30, right: 30, }}>
+                <Starlist opacity={fadeAnim} list={list} setList={setList} placeList={placeList} onRefresh={onRefresh} refreshing={refreshing} starListOn={starList} setStarList={setStarList} />
             </View>
             <>
                 <Pressable style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }} onPress={Keyboard.dismiss} />
@@ -557,10 +578,13 @@ export default function Home() {
 
 
 
-
-                    <Pressable onPress={Keyboard.dismiss} >
-                        <Modal visible={modal2} transparent>
-                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00000066', }}>
+                    <Modal visible={modal2} transparent>
+                        <KeyboardAvoidingView
+                            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                            style={{ flex: 1 }}
+                            keyboardVerticalOffset={Platform.OS === 'ios' ? -100 : 0}
+                        >
+                            <Pressable onPress={Keyboard.dismiss} style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00000066', }}>
                                 <Pressable onPress={Keyboard.dismiss} style={{ backgroundColor: theme[color].bg, borderRadius: 15, paddingHorizontal: 40, paddingVertical: 20, justifyContent: 'center', alignItems: 'center' }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
                                         <Text style={{ fontSize: fontTheme[fontSize].l, fontWeight: 600, color: theme[color].black, marginLeft: 10, }}>  장 볼 장소 {`${tempPlaceList.length}` + "/" + `${maxPlaceListLength}`}</Text>
@@ -572,25 +596,7 @@ export default function Home() {
                                         <Text style={{ fontSize: fontTheme[fontSize].s, marginBottom: 10, color: theme[color].black }}>3)  결제 시 장소 무제한 등록 및 광고 제거가 가능합니다. </Text></>
                                         :
                                         <View style={{ backgroundColor: theme[color].llgrey, borderRadius: 20, padding: 10, width: '70%', justifyContent: 'flex-start', alignItems: 'center', overflow: 'hidden', }}>
-                                            {tempPlaceList.length === maxPlaceListLength ? null
-                                                :
-                                                <View style={{ ...styles.headerList, borderStyle: 'dashed', paddingVertical: 8, backgroundColor: theme[color].bg, width: fontSize === 'll' ? 160 : 140, marginVertical: 5, flexDirection: 'row', justifyContent: 'center' }}>
-                                                    <TextInput
-                                                        placeholder={"새 장소 입력"}
-                                                        placeholderTextColor={theme[color].black}
-                                                        value={text}
-                                                        onChangeText={(a) => { setText(a); }}
-                                                        style={{ flex: 1, marginRight: 0, textAlign: 'center', color: theme[color].black, fontSize: fontTheme[fontSize].m }}
-                                                        onSubmitEditing={() => onSubmit(text)}
-                                                        returnKeyType='go'
-                                                        blurOnSubmit={tempPlaceList.length === maxPlaceListLength ? true : false}
-                                                        maxLength={6}
-                                                    />
-                                                    <TouchableOpacity onPress={() => onSubmit(text)}
-                                                        style={{ marginRight: -10, position: 'absolute', right: 20, }} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
-                                                        <Ionicons name="return-down-back" size={fontTheme[fontSize].l} color={theme[color].black} />
-                                                    </TouchableOpacity>
-                                                </View>}
+
                                             <DraggableFlatList
                                                 containerStyle={{
                                                     flexGrow: 0,           // 늘어나지 마라
@@ -608,6 +614,26 @@ export default function Home() {
                                                 indicatorStyle='default'
                                                 persistentScrollbar={true}
                                             />
+                                            {tempPlaceList.length === maxPlaceListLength ? null
+                                                :
+                                                <View style={{ ...styles.headerList, borderStyle: 'dashed', paddingVertical: 6, backgroundColor: theme[color].bg, width: fontSize === 'll' ? 160 : 140, marginVertical: 2, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                                    <TextInput
+                                                        placeholder={"새 장소 입력"}
+                                                        placeholderTextColor={theme[color].lpoint}
+                                                        value={text}
+                                                        onChangeText={(a) => { setText(a); }}
+                                                        style={{ padding: 3, flex: 1, paddingRight: 10, textAlign: 'center', color: theme[color].black, fontWeight: 600, fontSize: fontTheme[fontSize].m }}
+                                                        onSubmitEditing={() => onSubmit(text)}
+                                                        returnKeyType='go'
+                                                        blurOnSubmit={tempPlaceList.length === maxPlaceListLength ? true : false}
+                                                        maxLength={6}
+
+                                                    />
+                                                    <TouchableOpacity onPress={() => onSubmit(text)}
+                                                        style={{ position: 'absolute', right: 10 }} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+                                                        <Ionicons name="return-down-back" size={fontTheme[fontSize].l} color={theme[color].lpoint} />
+                                                    </TouchableOpacity>
+                                                </View>}
                                         </View>}
                                     {info ?
                                         <View style={{ flexDirection: 'row', marginTop: 10 }}>
@@ -624,11 +650,10 @@ export default function Home() {
                                             </View></View>}
                                 </Pressable>
 
-                            </View>
+                            </Pressable>
+                        </KeyboardAvoidingView>
 
-                        </Modal>
-                    </Pressable>
-
+                    </Modal>
 
 
 
