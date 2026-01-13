@@ -22,8 +22,7 @@ export default function StarList({ opacity, list, setList, placeList, starListOn
         }
     };
     const placeIdOrder = placeList.map(place => place.id);
-    console.log(placeIdOrder)
-    console.log(placeList, "dd")
+
     const sortedList = starList.sort(([idA, itemA], [idB, itemB]) => {
         // checked가 false인 게 위로
         if (itemA.checked && !itemB.checked) return 1;
@@ -37,13 +36,12 @@ export default function StarList({ opacity, list, setList, placeList, starListOn
 
         return safeIndexA - safeIndexB;
     });
-    console.log("starList", starListOn)
 
     return (
         <>
-            {starListOn ? <Pressable onPress={() => { console.log('s'); setStarList(false) }} style={{ position: 'absolute', top: -1000, bottom: -1000, left: -1000, right: -1000, zIndex: 2 }}></Pressable> : null}
-            <Animated.View style={{ opacity: opacity, position: 'absolute', top: -1000, bottom: -1000, backgroundColor: '#00000044', left: -1000, right: -1000, zIndex: 1 }}></Animated.View>
-            <Animated.View style={{ opacity: opacity, maxHeight: 300, width: fontSize === 'll' ? 300 : 200, zIndex: 2, justifyContent: 'center', alignItems: 'center', backgroundColor: theme[color].bg, borderRadius: 15, paddingVertical: 20 }}>
+            {starListOn ? <Pressable onPress={() => { setStarList(false) }} style={{ position: 'absolute', top: -1000, bottom: -1000, left: -1000, right: -1000, zIndex: 2 }}></Pressable> : null}
+            <Animated.View style={{ opacity: opacity, position: 'absolute', top: -1000, bottom: -1000, backgroundColor: '#00000066', left: -1000, right: -1000, zIndex: 1 }}></Animated.View>
+            <Animated.View style={{ opacity: opacity, maxHeight: 300, width: fontSize === 'll' ? 300 : fontSize === 'mm' ? 250 : 200, zIndex: 2, justifyContent: 'center', alignItems: 'center', backgroundColor: theme[color].bg, borderRadius: 15, paddingVertical: 20 }}>
                 {sortedList.length === 0 ? <Text style={{ color: theme[color].dddgrey }}>* 목록이 비었습니다</Text> :
 
                     <><View style={{ flexDirection: 'row', paddingBottom: 5, alignItems: 'center' }}>

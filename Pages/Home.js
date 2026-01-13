@@ -137,7 +137,6 @@ export default function Home() {
             setRefreshing(false);
             setKey(Date.now());
             const newList = Object.entries(list).filter(([key, value]) => value.checked === false)
-            console.log("newList", newList)
             setList(Object.fromEntries(newList))
         }, 500)
 
@@ -209,11 +208,9 @@ export default function Home() {
             if (tempPlaceList.length < maxPlaceListLength) {
                 setTempPlaceList([...tempPlaceList, { id: Date.now(), text: text, edit: false }])
                 setText("")
-                console.log(tempPlaceList.length)
 
             } else if (tempPlaceList.length >= maxPlaceListLength) {
                 setText("");
-                console.log(tempPlaceList.length)
             } else null;
         } else {
             Keyboard.dismiss()
@@ -290,7 +287,7 @@ export default function Home() {
             <ScaleDecorator>
                 <Swipeable renderRightActions={renderRightActions} enabled={!isActive}>
                     <TouchableOpacity style={{ ...styles.headerList, paddingVertical: 8, opacity: isActive ? 0.9 : 1, backgroundColor: isActive ? theme[color].lpoint : theme[color].bg, marginVertical: 2, width: fontSize === 'll' ? 160 : 140, flexDirection: 'row', justifyContent: 'center' }} onPress={() => setPEdit(true)} delayLongPress={500} onLongPress={drag}>
-                        {PEdit ? <TextInput autoFocus onChangeText={(a) => { const b = a.slice(0, 6); setPlaceText(b) }} onBlur={() => { placeEdit(id); }} onSubmitEditing={() => { placeEdit(id); }} style={{ ...styles.headerText, fontSize: fontTheme[fontSize].m }} value={placeText} defaultValue={title} ></TextInput> : <Text style={{ ...styles.headerText, fontSize: fontTheme[fontSize].m, }}>{title}</Text>}
+                        {PEdit ? <TextInput autoFocus onChangeText={(a) => { setPlaceText(a) }} maxLength={6} onBlur={() => { placeEdit(id); }} onSubmitEditing={() => { placeEdit(id); }} style={{ ...styles.headerText, fontSize: fontTheme[fontSize].m }} value={placeText} defaultValue={title} ></TextInput> : <Text style={{ ...styles.headerText, fontSize: fontTheme[fontSize].m, }}>{title}</Text>}
                     </TouchableOpacity>
                 </Swipeable>
             </ScaleDecorator>
@@ -302,11 +299,8 @@ export default function Home() {
         const editListItem = () => {
             !checked ?
                 setLEdit(true) : null;
-            console.log(LEdit)
-
         }
         const deleteListItem = () => {
-            console.log('hello')
             const newList = Object.entries(list).filter(([key, value]) => key !== id)
             setList(Object.fromEntries(newList))
         }
@@ -325,7 +319,7 @@ export default function Home() {
                 <View style={{ width: DisplayWidth / 6, flexDirection: 'row-reverse', borderRightWidth: 1, borderColor: theme[color].dgrey, paddingVertical: 4, }}>
                     <TouchableOpacity style={{ marginRight: 8 }} onPress={() => giveStar(id)} hitSlop={{ top: 20, bottom: 20, left: 30, right: 40 }}><FontAwesome6 name={"star-of-life"} size={fontTheme[fontSize].l - 1.5} color={list[id].star ? list[id].checked ? theme[color].dgrey : theme[color].lpoint : theme[color].dgrey} /></TouchableOpacity>
                 </View>
-                <TouchableOpacity delayLongPress={150} onLongPress={() => { console.log('longpress') }} hitSlop={{ top: 5, bottom: 5, left: 10, right: 10 }} activeOpacity={1} onPress={() => { console.log("clicked"); onCheck(id) }} style={{ width: DisplayWidth * 4 / 6, flexDirection: 'row', justifyContent: 'space-between' }}>
+                <TouchableOpacity hitSlop={{ top: 5, bottom: 5, left: 10, right: 10 }} activeOpacity={1} onPress={() => { onCheck(id) }} style={{ width: DisplayWidth * 4 / 6, flexDirection: 'row', justifyContent: 'space-between' }}>
                     {!LEdit ?
                         <WavyUnderline LEdit={LEdit} text={list[id].text} checked={list[id].checked}></WavyUnderline>
                         :
@@ -410,18 +404,7 @@ export default function Home() {
     }, [fontSize]);
 
 
-    const handleMeasure = () => {
-        if (forwardRef.current) {
-            draxRef.current.measureLayout(
-                (x, y, width, height) => {
-                    console.log('DraxScrollView Layout:', x, y, width, height);
-                },
-                (error) => {
-                    console.error('Measurement Error:', error);
-                }
-            );
-        }
-    };
+
     const onPlaceOK = () => {
         if (tempPlaceList === placeList) { setModal2(false); setModalSet(false); setInfo(false); }
         else (
@@ -610,24 +593,27 @@ export default function Home() {
                                                 renderItem={({ item, drag, isActive }) => <PlaceItem title={item.text} id={item.id} drag={drag} isActive={isActive} />}
                                                 keyExtractor={item => item.id}
                                                 onDragEnd={({ data }) => { setTempPlaceList(data); }}
-                                                onDragBegin={() => console.log('dragbegin')}
                                                 indicatorStyle='default'
                                                 persistentScrollbar={true}
                                             />
                                             {tempPlaceList.length === maxPlaceListLength ? null
                                                 :
-                                                <View style={{ ...styles.headerList, borderStyle: 'dashed', paddingVertical: 6, backgroundColor: theme[color].bg, width: fontSize === 'll' ? 160 : 140, marginVertical: 2, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                                <View style={{ ...styles.headerList, borderStyle: 'dashed', paddingVertical: 6, backgroundColor: theme[color].bg, width: fontSize === 'll' ? 160 : 140, marginVertical: 3, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                                                     <TextInput
-                                                        placeholder={"새 장소 입력"}
+                                                        placeholder="새 장소 "
                                                         placeholderTextColor={theme[color].lpoint}
                                                         value={text}
                                                         onChangeText={(a) => { setText(a); }}
-                                                        style={{ padding: 3, flex: 1, paddingRight: 10, textAlign: 'center', color: theme[color].black, fontWeight: 600, fontSize: fontTheme[fontSize].m }}
+                                                        style={{
+                                                            paddingVertical: 3,
+                                                            paddingLeft: 30,  // 중요: 왼쪽 여백 (아이콘과 대칭을 맞추기 위해)
+                                                            paddingRight: 30, flex: 1, textAlign: 'center', color: theme[color].black, fontWeight: 600, fontSize: fontTheme[fontSize].m
+                                                        }}
                                                         onSubmitEditing={() => onSubmit(text)}
                                                         returnKeyType='go'
                                                         blurOnSubmit={tempPlaceList.length === maxPlaceListLength ? true : false}
                                                         maxLength={6}
-
+                                                        autoFocus
                                                     />
                                                     <TouchableOpacity onPress={() => onSubmit(text)}
                                                         style={{ position: 'absolute', right: 10 }} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
@@ -713,7 +699,7 @@ export default function Home() {
                                             onScrollBeginDrag={() => { Keyboard.dismiss(); }}
                                         >
                                             {sortedList(listN(item.id)).map(([listID]) =>
-                                                <DraxView payload={listID} key={listID} longPressDelay={200} draggingStyle={{ opacity: 0.2 }} hoverDragReleasedStyle={{ display: 'none' }} hoverDraggingStyle={{ opacity: 0.2 }} onDragStart={() => { console.log('start drag', list[listID].text); setScrollAble(false); }} onDragEnd={() => setScrollAble(true)} onDragDrop={() => setScrollAble(true)} >
+                                                <DraxView payload={listID} key={listID} longPressDelay={200} draggingStyle={{ opacity: 0.2 }} hoverDragReleasedStyle={{ display: 'none' }} hoverDraggingStyle={{ opacity: 0.2 }} onDragStart={() => { setScrollAble(false); }} onDragEnd={() => setScrollAble(true)} onDragDrop={() => setScrollAble(true)} >
                                                     <ListItem id={listID} text={list[listID].text} checked={list[listID].checked} />
 
                                                 </DraxView>)}
