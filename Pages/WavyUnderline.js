@@ -39,7 +39,8 @@ const WavyUnderline = ({ LEdit, text, checked }) => {
     return (
 
         <View style={{ position: 'relative', paddingTop: 16, marginBottom: 4 }}>
-            <Text numberOfLines={1} ellipsizeMode='clip' style={{ textDecorationLine: checked ? 'line-through' : null, textDecorationStyle: 'double', width: Dimensions.get('window').width * 4 / 6, position: 'absolute', left: 0, bottom: -2, paddingHorizontal: 10, fontSize: fontTheme[fontSize].l, color: checked ? color === "light" ? theme[color].ddgrey : theme[color].dgrey : theme[color].black, fontWeight: '500' }}>{text}</Text>
+
+            <Text numberOfLines={1} ellipsizeMode='clip' style={{ textDecorationLine: checked ? 'line-through' : null, textDecorationStyle: 'double', width: Dimensions.get('window').width * 4 / 6, position: 'absolute', left: 0, paddingHorizontal: 10, fontSize: fontTheme[fontSize].l, color: checked ? color === "light" ? theme[color].ddgrey : theme[color].dgrey : theme[color].black, fontWeight: '500' }}>{text}</Text>
         </View>
     );
 };

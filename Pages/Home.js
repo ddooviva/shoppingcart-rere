@@ -203,6 +203,7 @@ export default function Home() {
                 animated: true
             });
         }
+
     };
 
     const onSubmit = (text) => {
@@ -323,13 +324,13 @@ export default function Home() {
                 </View>
                 <TouchableOpacity hitSlop={{ top: 5, bottom: 5, left: 10, right: 10 }} activeOpacity={1} onPress={() => { onCheck(id) }} style={{ width: DisplayWidth * 4 / 6, flexDirection: 'row', justifyContent: 'space-between' }}>
                     {!LEdit ?
-                        <WavyUnderline LEdit={LEdit} text={list[id].text} checked={list[id].checked}></WavyUnderline>
+                        <Text numberOfLines={1} ellipsizeMode='tail' style={{ ...styles.listText, textAlignVertical: 'center', textDecorationLine: checked ? 'line-through' : null, textDecorationStyle: 'double', width: Dimensions.get('window').width * 4 / 6, fontSize: fontTheme[fontSize].l, color: checked ? color === "light" ? theme[color].ddgrey : theme[color].dgrey : theme[color].black, fontWeight: '500' }}>{text}</Text>
                         :
                         <TextInput value={listT} onChangeText={(text) => { setListT(text); }} onSubmitEditing={() => saveListT()} onBlur={() => saveListT()} autoFocus style={{ ...styles.listText, minWidth: DisplayWidth * 4 / 6 }} textAlignVertical='center' />
                     }
                 </TouchableOpacity>
                 <View style={{ flexDirection: 'row', width: DisplayWidth / 6 }}>
-                    <TouchableOpacity style={{ marginRight: 7 }} onPress={() => !LEdit ? editListItem(id) : saveListT()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>{!LEdit ? <Entypo name="pencil" size={20} color={theme[color].dgrey} /> : <Ionicons name="return-down-back" size={fontTheme[fontSize].l + 3} color={theme[color].dddgrey} />}</TouchableOpacity>
+                    <TouchableOpacity style={{ marginRight: 7 }} onPress={() => !LEdit ? editListItem(id) : saveListT()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>{!LEdit ? <Entypo name="pencil" size={20} color={theme[color].dgrey} /> : <Ionicons name="return-down-back" size={20} color={theme[color].dddgrey} />}</TouchableOpacity>
                     <TouchableOpacity onPress={() => deleteListItem(id)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}><Entypo name="circle-with-cross" size={20} color={theme[color].dgrey} /></TouchableOpacity>
                 </View>
             </View>
@@ -422,6 +423,13 @@ export default function Home() {
             { text: '나가기', style: 'default', onPress: () => { setModal2(false); setModalSet(false); setInfo(false); setText(""); } },
         ], { cancelable: true }))
     }
+    const currentX = useRef(0); // 드래그 시작 시점의 X 좌표 저장용
+
+    // 1. 드래그 시작 시 위치 고정 함수
+    const lockScroll = (index) => {
+        currentX.current = index * DisplayWidth; // 현재 페이지의 시작 지점 계산
+        setScrollAble(false);
+    };
     const styles = StyleSheet.create({
         header: {
             marginTop: 20,
@@ -659,7 +667,8 @@ export default function Home() {
                             <TouchableOpacity title="plus" onPress={() => setModal4(true)}><View style={styles.modalButton}><MaterialIcons name="settings" size={fontTheme[fontSize].m} color={theme[color].black} /><Text style={{ fontSize: fontTheme[fontSize].m, color: theme[color].black }}>  설정</Text></View></TouchableOpacity>
                         </View> : null
                     }
-                    <View style={{ flex: modalSet ? 6.5 : 7, marginTop: 1, borderTopWidth: 1, borderColor: theme[color].dgrey }}>
+                    <View onStartShouldSetResponderCapture={() => !scrollAble}
+                        onMoveShouldSetResponderCapture={() => !scrollAble} style={{ flex: modalSet ? 6.5 : 7, marginTop: 1, borderTopWidth: 1, borderColor: theme[color].dgrey }}>
                         <KeyboardAvoidingView
                             behavior={Platform.OS === "ios" ? "padding" : "height"}
                             style={{ flex: 1 }}
@@ -669,26 +678,36 @@ export default function Home() {
                                 keyboardShouldPersistTaps="handled"
                                 style={{ flex: 1 }}
                                 horizontal
-
-                                onScroll={handleMainScroll}
+                                pagingEnabled
+                                onScroll={(e) => {
+                                    if (!scrollAble) {
+                                        // 드래그 중일 때 억지로 스크롤이 발생하면 저장된 위치로 즉시 복귀
+                                        mainScroll.current?.scrollTo({
+                                            x: currentX.current,
+                                            animated: false, // 애니메이션 없이 즉시 고정
+                                        });
+                                    }
+                                    // 원래의 handleMainScroll 로직 실행
+                                    handleMainScroll(e);
+                                }}
+                                disableIntervalMomentum={true}
                                 scrollEventThrottle={10}
                                 showsHorizontalScrollIndicator={false}
                                 ref={mainScroll}
-                                contentContainerStyle={{}}
                                 scrollEnabled={scrollAble}
-                                directionalLockEnabled={true}
                                 snapToInterval={DisplayWidth}
                                 snapToAlignment="center"
                                 decelerationRate="fast"
                                 onScrollBeginDrag={Keyboard.dismiss}
                                 scrollThreshold={1}
+
                             >
 
                                 {placeList.map((item, index) => (
 
                                     <View key={index} style={{ width: DisplayWidth }}>
 
-                                        <DraxScrollView key={`${index}-${key}`} ref={(ref) => { scrollViewRef.current[index] = ref }} scrollEventThrottle={1000}
+                                        <ScrollView key={`${index}-${key}`} ref={(ref) => { scrollViewRef.current[index] = ref }} scrollEventThrottle={1000}
                                             refreshControl={
                                                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme[color].dddgrey} progressViewStyle="bar" progressBackgroundColor="transparent" colors={[theme[color].black, theme[color].dddgrey]} />
                                             }
@@ -697,7 +716,6 @@ export default function Home() {
                                                 ...styles.listContainer
                                             }} scrollEnabled={!modal2 && scrollAble}
                                             scrollThreshold={1}
-
                                             keyboardShouldPersistTaps="handled"
                                             directionalLockEnabled={true}
                                             onScrollBeginDrag={() => { Keyboard.dismiss(); }}
@@ -709,11 +727,11 @@ export default function Home() {
                                                     hoverDragReleasedStyle={{ display: 'none' }}
 
                                                     renderHoverContent={({ viewState }) => {
-                                                        return <View style={{ left: viewState?.grabOffset?.x - 50, top: viewState.grabOffset?.y - 30, }}>
-                                                            <Text style={{ ...styles.listText, shadowColor: theme[color].lpoint, textShadowOffset: { bottom: 10 }, textShadowRadius: 1 }}>{list[listID].text}</Text>
+                                                        return <View style={{ left: viewState?.grabOffset?.x - 60, top: viewState.grabOffset?.y - 30, }}>
+                                                            <Text style={{ ...styles.listText, textShadowColor: 'rgba(255, 87, 31,1)', textShadowOffset: { width: 0, height: 10 }, textShadowRadius: 10 }}>{list[listID].text}</Text>
                                                         </View>
                                                     }}
-                                                    onDragStart={() => { setScrollAble(false); }} onDragEnd={() => setScrollAble(true)} onDragDrop={() => setScrollAble(true)} >
+                                                    onDragStart={() => { lockScroll(index); setScrollAble(false); }} onDragEnd={() => setScrollAble(true)} onDragDrop={() => setScrollAble(true)} >
                                                     <ListItem id={listID} text={list[listID].text} checked={list[listID].checked} />
 
                                                 </DraxView>)}
@@ -742,7 +760,7 @@ export default function Home() {
                                                     </TouchableOpacity>
                                                 </View>
                                             </View>
-                                        </DraxScrollView>
+                                        </ScrollView>
 
                                     </View>
                                 ))}
