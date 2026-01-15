@@ -23,9 +23,7 @@ import Octicons from '@expo/vector-icons/Octicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Starlist from './starlist';
 import { Swipeable } from 'react-native-gesture-handler';
-import { LinearGradient } from 'expo-linear-gradient';
-import FollowPoint from './point';
-import { useAnimatedStyle } from 'react-native-reanimated';
+
 const DisplayWidth = Dimensions.get("window").width
 const DisplayHeight = Dimensions.get('window').height
 
@@ -98,10 +96,13 @@ export default function Home() {
         await AsyncStorage.setItem("@textSize", fontSize);
     }
     const saveList = async () => {
-        const stringList = JSON.stringify(list);
-        const stringPlaceList = JSON.stringify(placeList);
-        await AsyncStorage.setItem("@list", stringList);
-        await AsyncStorage.setItem("@placeList", stringPlaceList);
+        if (Object.keys(list).length > 0 && placeList.length > 0) {
+            const stringList = JSON.stringify(list);
+            const stringPlaceList = JSON.stringify(placeList);
+            await AsyncStorage.setItem("@list", stringList);
+            await AsyncStorage.setItem("@placeList", stringPlaceList);
+        }
+        else null
     }
     const loadList = async () => {
         if (await AsyncStorage.getItem("@list") === null) {
@@ -668,7 +669,6 @@ export default function Home() {
                                 keyboardShouldPersistTaps="handled"
                                 style={{ flex: 1 }}
                                 horizontal
-                                pagingEnabled
 
                                 onScroll={handleMainScroll}
                                 scrollEventThrottle={10}
@@ -695,7 +695,7 @@ export default function Home() {
                                             style={{ flex: 1 }}
                                             contentContainerStyle={{
                                                 ...styles.listContainer
-                                            }} scrollEnabled={!modal2}
+                                            }} scrollEnabled={!modal2 && scrollAble}
                                             scrollThreshold={1}
 
                                             keyboardShouldPersistTaps="handled"
@@ -704,15 +704,20 @@ export default function Home() {
                                         >
                                             {sortedList(listN(item.id)).map(([listID]) =>
                                                 <DraxView payload={listID} key={listID} longPressDelay={200}
+                                                    disallowInterruption={true}
                                                     draggingStyle={{ opacity: 0.2 }}
                                                     hoverDragReleasedStyle={{ display: 'none' }}
+
                                                     renderHoverContent={({ viewState }) => {
-                                                        console.log(2, viewState?.grabOffsetRatio?.x)
+                                                        return <View style={{ left: viewState?.grabOffset?.x - 50, top: viewState.grabOffset?.y - 30, }}>
+                                                            <Text style={{ ...styles.listText, shadowColor: theme[color].lpoint, textShadowOffset: { bottom: 10 }, textShadowRadius: 1 }}>{list[listID].text}</Text>
+                                                        </View>
                                                     }}
                                                     onDragStart={() => { setScrollAble(false); }} onDragEnd={() => setScrollAble(true)} onDragDrop={() => setScrollAble(true)} >
                                                     <ListItem id={listID} text={list[listID].text} checked={list[listID].checked} />
 
                                                 </DraxView>)}
+                                            {console.log(scrollAble)}
                                             <View style={{ borderBottomColor: theme[color].lpoint, borderBottomWidth: 1, width: DisplayWidth, alignItems: 'center', marginBottom: 10 }}>
                                                 <View style={{ flexDirection: 'row', ...styles.listItem, borderBottomWidth: 1, borderBottomColor: theme[color].lpoint, marginBottom: 5, height: fontSize === 'll' ? 34.5 : fontSize === 'mm' ? 31.5 : 28.5, paddingVertical: 0 }}>
                                                     <View style={{ width: DisplayWidth / 6, flexDirection: 'row-reverse', borderRightWidth: 1, borderColor: theme[color].lpoint, paddingVertical: 4 }}>
@@ -748,7 +753,6 @@ export default function Home() {
                 </DraxProvider >
                 <StatusBar style={color === 'dark' ? 'light' : 'dark'} />
             </>
-            {!scrollAble && <FollowPoint position={dragPos} />}
         </ImageBackground >
     );
 }
