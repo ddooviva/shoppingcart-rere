@@ -24,7 +24,8 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Starlist from './starlist';
 import { Swipeable } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import FollowPoint from './point';
+import { useAnimatedStyle } from 'react-native-reanimated';
 const DisplayWidth = Dimensions.get("window").width
 const DisplayHeight = Dimensions.get('window').height
 
@@ -59,7 +60,7 @@ export default function Home() {
     const [starList, setStarList] = useState(false);
     const fadeAnim = useRef(new Animated.Value(0)).current; // 초기값 0 (투명)
     const clear = async () => { await AsyncStorage.clear(); }
-
+    const dragPos = useRef(new Animated.ValueXY()).current;
     useEffect(() => {
         if (starList) {
             // 2. starList가 true가 되면 투명도를 1로 (나타나기)
@@ -447,7 +448,10 @@ export default function Home() {
             paddingVertical: 10,
             paddingHorizontal: 10,
             marginHorizontal: 3,
-            marginVertical: 10
+            marginVertical: 10,
+            maxHeight: fontTheme[fontSize].l + 26,
+            minHeight: fontTheme[fontSize].l + 26,
+
         },
         headerText: {
             padding: 3,
@@ -570,16 +574,16 @@ export default function Home() {
                             <Pressable onPress={Keyboard.dismiss} style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00000066', }}>
                                 <Pressable onPress={Keyboard.dismiss} style={{ backgroundColor: theme[color].bg, borderRadius: 15, paddingHorizontal: 40, paddingVertical: 20, justifyContent: 'center', alignItems: 'center' }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-                                        <Text style={{ fontSize: fontTheme[fontSize].l, fontWeight: 600, color: theme[color].black, marginLeft: 10, }}>  장 볼 장소 {`${tempPlaceList.length}` + "/" + `${maxPlaceListLength}`}</Text>
+                                        <Text style={{ fontSize: fontTheme[fontSize].l, fontWeight: 600, color: theme[color].black, marginLeft: 10, }}>  장 볼 장소</Text>
                                         <TouchableOpacity onPress={() => setInfo(!info)}><MaterialIcons name="info-outline" size={20} color={theme[color].black} style={{ marginBottom: 2, marginTop: 2, marginLeft: 5 }} /></TouchableOpacity>
                                     </View>
-                                    {info ? <><Text style={{ fontSize: fontTheme[fontSize].s, color: theme[color].black }}>1)  장소 버튼을 꾹 누른 후 드래그하여</Text>
+                                    {info ? <View style={{ marginHorizontal: -20, justifyContent: 'center', alignContent: 'center', alignItems: 'center' }}><Text style={{ fontSize: fontTheme[fontSize].s, color: theme[color].black }}>1)  장소 버튼을 꾹 누른 후 드래그하여</Text>
                                         <Text style={{ fontSize: fontTheme[fontSize].s, marginBottom: 10, color: theme[color].black }}>순서를 변경할 수 있습니다.</Text>
-                                        <Text style={{ fontSize: fontTheme[fontSize].s, marginBottom: 10, color: theme[color].black }}>{"2)  장소는 최대 " + `${maxPlaceListLength}` + "개까지 등록 가능합니다."}</Text>
-                                        <Text style={{ fontSize: fontTheme[fontSize].s, marginBottom: 10, color: theme[color].black }}>3)  결제 시 장소 무제한 등록 및 광고 제거가 가능합니다. </Text></>
+                                        <Text style={{ fontSize: fontTheme[fontSize].s, marginBottom: 10, color: theme[color].black }}>{"2)  장소는 최대 " + `${maxPlaceListLength}` + "개까지 등록 가능합니다."}</Text></View>
                                         :
-                                        <View style={{ backgroundColor: theme[color].llgrey, borderRadius: 20, padding: 10, width: '70%', justifyContent: 'flex-start', alignItems: 'center', overflow: 'hidden', }}>
-
+                                        <View style={{ backgroundColor: theme[color].llgrey, borderRadius: 20, padding: 10, paddingVertical: 15, width: '70%', justifyContent: 'flex-start', alignItems: 'center', overflow: 'hidden', }}>
+                                            {/* <Text style={{ position: 'absolute', top: 5, left: '50%', fontSize: fontTheme[fontSize].s - 5, fontWeight: 300, color: theme[color].black }}>{`${tempPlaceList.length}` + "/" + `${maxPlaceListLength}`}</Text> */}
+                                            <Entypo style={{ position: 'absolute', top: '50%', right: 5 }} name="select-arrows" size={fontTheme[fontSize].s} color={theme[color].black} />
                                             <DraggableFlatList
                                                 containerStyle={{
                                                     flexGrow: 0,           // 늘어나지 마라
@@ -598,10 +602,10 @@ export default function Home() {
                                             />
                                             {tempPlaceList.length === maxPlaceListLength ? null
                                                 :
-                                                <View style={{ ...styles.headerList, borderStyle: 'dashed', paddingVertical: 6, backgroundColor: theme[color].bg, width: fontSize === 'll' ? 160 : 140, marginVertical: 3, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                                <View style={{ ...styles.headerList, borderStyle: 'dashed', borderColor: theme[color].lpoint, paddingVertical: 6, backgroundColor: theme[color].bg, width: fontSize === 'll' ? 160 : 140, marginVertical: 3, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                                                     <TextInput
                                                         placeholder="새 장소 "
-                                                        placeholderTextColor={theme[color].lpoint}
+                                                        placeholderTextColor={theme[color].black}
                                                         value={text}
                                                         onChangeText={(a) => { setText(a); }}
                                                         style={{
@@ -613,7 +617,7 @@ export default function Home() {
                                                         returnKeyType='go'
                                                         blurOnSubmit={tempPlaceList.length === maxPlaceListLength ? true : false}
                                                         maxLength={6}
-                                                        autoFocus
+
                                                     />
                                                     <TouchableOpacity onPress={() => onSubmit(text)}
                                                         style={{ position: 'absolute', right: 10 }} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
@@ -699,7 +703,13 @@ export default function Home() {
                                             onScrollBeginDrag={() => { Keyboard.dismiss(); }}
                                         >
                                             {sortedList(listN(item.id)).map(([listID]) =>
-                                                <DraxView payload={listID} key={listID} longPressDelay={200} draggingStyle={{ opacity: 0.2 }} hoverDragReleasedStyle={{ display: 'none' }} hoverDraggingStyle={{ opacity: 0.2 }} onDragStart={() => { setScrollAble(false); }} onDragEnd={() => setScrollAble(true)} onDragDrop={() => setScrollAble(true)} >
+                                                <DraxView payload={listID} key={listID} longPressDelay={200}
+                                                    draggingStyle={{ opacity: 0.2 }}
+                                                    hoverDragReleasedStyle={{ display: 'none' }}
+                                                    renderHoverContent={({ viewState }) => {
+                                                        console.log(2, viewState?.grabOffsetRatio?.x)
+                                                    }}
+                                                    onDragStart={() => { setScrollAble(false); }} onDragEnd={() => setScrollAble(true)} onDragDrop={() => setScrollAble(true)} >
                                                     <ListItem id={listID} text={list[listID].text} checked={list[listID].checked} />
 
                                                 </DraxView>)}
@@ -738,6 +748,7 @@ export default function Home() {
                 </DraxProvider >
                 <StatusBar style={color === 'dark' ? 'light' : 'dark'} />
             </>
+            {!scrollAble && <FollowPoint position={dragPos} />}
         </ImageBackground >
     );
 }

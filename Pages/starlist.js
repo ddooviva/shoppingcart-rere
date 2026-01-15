@@ -48,7 +48,7 @@ export default function StarList({ opacity, list, setList, placeList, starListOn
                         <Text style={{ padding: 3, fontSize: fontTheme[fontSize].l, fontWeight: 600, color: theme[color].black }}>  꼭 사야 할 것 </Text>
                     </View>
                         <View style={{ borderBottomWidth: 1, borderColor: theme[color].lpoint, width: '85%' }}></View>
-                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ maxWidth: '85%', width: '85%', flexDirection: 'column', gap: 5, alignItems: 'flex-start', paddingVertical: 10, paddingBottom: 20 }}>
+                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ maxWidth: '85%', width: '85%', flexDirection: 'column', gap: 5, alignItems: 'flex-start', paddingVertical: 20, paddingBottom: 20 }}>
                             {sortedList.map(([id, item], index) =>
                                 <TouchableOpacity onPress={() => onCheck(id)} key={id} style={{ width: '100%', flexDirection: 'row', gap: 5, alignItems: 'center' }} >
                                     <Ionicons name={item.checked ? "checkbox-outline" : "square-outline"} size={24} color={theme[color].dddgrey} />
