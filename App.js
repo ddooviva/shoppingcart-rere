@@ -8,15 +8,16 @@ import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ColorProvider } from './Pages/ColorContext';
 import { FontSizeProvider } from './Pages/FontSizeContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <FontSizeProvider>
         <ColorProvider>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Home style={{ flex: 1 }}></Home>
-          </View >
+          <SafeAreaProvider>
+            <Home />
+          </SafeAreaProvider>
         </ColorProvider>
       </FontSizeProvider>
     </GestureHandlerRootView>

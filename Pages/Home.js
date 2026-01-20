@@ -23,6 +23,7 @@ import Octicons from '@expo/vector-icons/Octicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Starlist from './starlist';
 import { Swipeable } from 'react-native-gesture-handler';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const DisplayWidth = Dimensions.get("window").width
 const DisplayHeight = Dimensions.get('window').height
@@ -254,9 +255,6 @@ export default function Home() {
         setList(newList);
     };
 
-    const gotopay = () => {
-        console.log('결제유도')
-    }
     const PlaceItem = ({ title, drag, isActive, id }) => {
         const [PEdit, setPEdit] = useState(false);
         const [placeText, setPlaceText] = useState(title);
@@ -412,15 +410,15 @@ export default function Home() {
         if (tempPlaceList === placeList) { setModal2(false); setModalSet(false); setInfo(false); }
         else (
             Alert.alert("적용", "설정을 완료하시겠습니까?", [
-                { text: '취소', style: 'destructive' },
+                { text: '취소', style: 'cancel' },
                 { text: '확인', style: 'default', onPress: () => { setModal2(false); setModalSet(false); setInfo(false); setPlaceList(tempPlaceList); setList(tempList); setText(""); } }
             ], { cancelable: true }))
     }
     const onPlaceX = () => {
         if (tempPlaceList === placeList) { setModal2(false); setModalSet(false); setInfo(false); }
         else (Alert.alert("수정 중단", "저장하지 않은 변경 사항이 사라집니다. 그래도 나갈까요?", [
-            { text: '계속 수정', style: 'destructive' },
-            { text: '나가기', style: 'default', onPress: () => { setModal2(false); setModalSet(false); setInfo(false); setText(""); } },
+            { text: '계속 수정', style: 'cancel' },
+            { text: '나가기', style: 'destructive', onPress: () => { setModal2(false); setModalSet(false); setInfo(false); setText(""); } },
         ], { cancelable: true }))
     }
     const currentX = useRef(0); // 드래그 시작 시점의 X 좌표 저장용
@@ -432,7 +430,7 @@ export default function Home() {
     };
     const styles = StyleSheet.create({
         header: {
-            marginTop: 20,
+            marginTop: 5,
             paddingHorizontal: 10,
             justifyContent: 'center',
 
@@ -538,19 +536,19 @@ export default function Home() {
             source={color === "light" ? require('../assets/paper.jpg') : require('../assets/paper-dark.jpg')}
             style={{ flex: 1, resizeMode: 'cover', justifyContent: 'center', zIndex: -2, width: '100%' }}
         >
-            <View style={{ zindex: 3, position: 'absolute', bottom: 20, right: 20 }}>
+            <View style={{ zIndex: 3, position: 'absolute', bottom: 20, right: 20 }}>
                 <Pressable onPress={() => setStarList(!starList)} style={{ zIndex: 4, borderColor: starList ? theme[color].llpoint : theme[color].dgrey, borderWidth: 1, backgroundColor: theme[color].bg, width: 50, height: 50, borderRadius: 35, justifyContent: 'center', alignItems: 'center' }}>
                     <FontAwesome6 name={"star-of-life"} size={25} color={starList ? theme[color].lpoint : theme[color].dgrey} />
                 </Pressable>
             </View>
-            <View style={{ zindex: 0, position: 'absolute', bottom: 30, right: 30, }}>
+            <View style={{ zIndex: 0, position: 'absolute', bottom: 30, right: 30, }}>
                 <Starlist opacity={fadeAnim} list={list} setList={setList} placeList={placeList} onRefresh={onRefresh} refreshing={refreshing} starListOn={starList} setStarList={setStarList} />
             </View>
-            <>
+            <SafeAreaView style={{ flex: 1 }}>
                 <Pressable style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }} onPress={Keyboard.dismiss} />
                 {isloaded ? null : <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: theme[color].bg, zIndex: 10 }}><Image style={{ height: DisplayWidth * 0.4 }} source={require('../assets/splash-icon.png')} /></View>}
                 <DraxProvider>
-                    <View style={{ minHeight: fontSize === 'll' ? 100 : fontSize === 'mm' ? 93 : 85, flexDirection: 'row', marginTop: 10, marginBottom: 5, borderBottomWidth: 1, borderColor: theme[color].dgrey }}>
+                    <View style={{ flexDirection: 'row', marginBottom: 5, borderBottomWidth: 1, borderColor: theme[color].dgrey }}>
                         <View style={{ flex: 8, backgroundColor: 'transparent' }}>
                             <DraxScrollView ref={mainScrollTop} showsHorizontalScrollIndicator={false} contentContainerStyle={{ ...styles.header, paddingTop: change ? -10 : -8 }} horizontal={true}>
                                 {placeList.map((item, index) =>
@@ -565,7 +563,7 @@ export default function Home() {
                                     </DraxView>)}
                             </DraxScrollView>
                         </View>
-                        <View style={{ marginTop: 20, flex: 1, padding: 0, margin: 5, justifyContent: 'center', alignItems: 'center' }}>
+                        <View style={{ marginTop: 0, flex: 1, padding: 0, margin: 5, justifyContent: 'center', alignItems: 'center' }}>
                             <TouchableOpacity hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }} style={{ borderRadius: 20, borderWidth: 2, borderColor: placeList.length === 0 ? theme[color].lpoint : 'transparent', padding: 5 }} onPress={() => openModalSet()} >
                                 <Ionicons name="ellipsis-horizontal" size={20} color={/* placeList.length === 0 ?  */theme[color].lpoint} /></TouchableOpacity>
                         </View>
@@ -590,7 +588,7 @@ export default function Home() {
                                         <Text style={{ fontSize: fontTheme[fontSize].s, marginBottom: 10, color: theme[color].black }}>순서를 변경할 수 있습니다.</Text>
                                         <Text style={{ fontSize: fontTheme[fontSize].s, marginBottom: 10, color: theme[color].black }}>{"2)  장소는 최대 " + `${maxPlaceListLength}` + "개까지 등록 가능합니다."}</Text></View>
                                         :
-                                        <View style={{ backgroundColor: theme[color].llgrey, borderRadius: 20, padding: 10, paddingVertical: 15, width: '70%', justifyContent: 'flex-start', alignItems: 'center', overflow: 'hidden', }}>
+                                        <View style={{ backgroundColor: theme[color].llgrey, borderRadius: 20, padding: 10, paddingVertical: 15, minWidth: '70%', justifyContent: 'flex-start', alignItems: 'center', overflow: 'hidden', }}>
                                             {/* <Text style={{ position: 'absolute', top: 5, left: '50%', fontSize: fontTheme[fontSize].s - 5, fontWeight: 300, color: theme[color].black }}>{`${tempPlaceList.length}` + "/" + `${maxPlaceListLength}`}</Text> */}
                                             <Entypo style={{ position: 'absolute', top: '50%', right: 5 }} name="select-arrows" size={fontTheme[fontSize].s} color={theme[color].black} />
                                             <DraggableFlatList
@@ -611,7 +609,7 @@ export default function Home() {
                                             />
                                             {tempPlaceList.length === maxPlaceListLength ? null
                                                 :
-                                                <View style={{ ...styles.headerList, borderStyle: 'dashed', borderColor: theme[color].lpoint, paddingVertical: 6, backgroundColor: theme[color].bg, width: fontSize === 'll' ? 160 : 140, marginVertical: 3, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                                <View style={{ ...styles.headerList, marginHorizontal: 10, borderStyle: 'dashed', borderColor: theme[color].lpoint, paddingVertical: 6, backgroundColor: theme[color].bg, width: fontSize === 'll' ? 160 : 140, marginVertical: 3, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                                                     <TextInput
                                                         placeholder="새 장소 "
                                                         placeholderTextColor={theme[color].black}
@@ -619,8 +617,8 @@ export default function Home() {
                                                         onChangeText={(a) => { setText(a); }}
                                                         style={{
                                                             paddingVertical: 3,
-                                                            paddingLeft: 30,  // 중요: 왼쪽 여백 (아이콘과 대칭을 맞추기 위해)
-                                                            paddingRight: 30, flex: 1, textAlign: 'center', color: theme[color].black, fontWeight: 600, fontSize: fontTheme[fontSize].m
+                                                            paddingLeft: 0,  // 중요: 왼쪽 여백 (아이콘과 대칭을 맞추기 위해)
+                                                            paddingRight: 0, flex: 1, textAlign: 'center', color: theme[color].black, fontWeight: 600, fontSize: fontTheme[fontSize].m
                                                         }}
                                                         onSubmitEditing={() => onSubmit(text)}
                                                         returnKeyType='go'
@@ -735,7 +733,6 @@ export default function Home() {
                                                     <ListItem id={listID} text={list[listID].text} checked={list[listID].checked} />
 
                                                 </DraxView>)}
-                                            {console.log(scrollAble)}
                                             <View style={{ borderBottomColor: theme[color].lpoint, borderBottomWidth: 1, width: DisplayWidth, alignItems: 'center', marginBottom: 10 }}>
                                                 <View style={{ flexDirection: 'row', ...styles.listItem, borderBottomWidth: 1, borderBottomColor: theme[color].lpoint, marginBottom: 5, height: fontSize === 'll' ? 34.5 : fontSize === 'mm' ? 31.5 : 28.5, paddingVertical: 0 }}>
                                                     <View style={{ width: DisplayWidth / 6, flexDirection: 'row-reverse', borderRightWidth: 1, borderColor: theme[color].lpoint, paddingVertical: 4 }}>
@@ -747,7 +744,7 @@ export default function Home() {
                                                             scrollViewRef.current[placeNum]?.scrollTo({ y: 999999, animated: true })
                                                         }
                                                         style={{ ...styles.listText, left: 0, bottom: 0, width: DisplayWidth * 4 / 6, paddingHorizontal: 10, marginTop: Platform.OS === 'android' ? -20 : 0, marginBottom: Platform.OS === 'android' ? -10 : 0 }} textAlignVertical='center'
-                                                        placeholder={'살 물건을 입력하세요'}
+                                                        placeholder={'여기서 살 물건을 입력하세요'}
                                                         placeholderTextColor={theme[color].ddgrey}
                                                         value={inputT}
                                                         onChangeText={inputTChange}
@@ -770,7 +767,7 @@ export default function Home() {
 
                 </DraxProvider >
                 <StatusBar style={color === 'dark' ? 'light' : 'dark'} />
-            </>
+            </SafeAreaView>
         </ImageBackground >
     );
 }
