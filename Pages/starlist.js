@@ -1,4 +1,4 @@
-import { Animated, View, Text, ScrollView, TouchableOpacity, Pressable } from "react-native"
+import { Animated, View, Text, ScrollView, TouchableOpacity, Modal, Pressable } from "react-native"
 import { theme } from "./color"
 import { useColor } from "./ColorContext"
 import { useFontSize } from "./FontSizeContext";
@@ -38,12 +38,13 @@ export default function StarList({ opacity, list, setList, placeList, starListOn
     });
 
     return (
-        <>
-            {starListOn ? <Pressable onPress={() => { setStarList(false) }} style={{ position: 'absolute', top: -1000, bottom: -1000, left: -1000, right: -1000, zIndex: 2 }}></Pressable> : null}
-            <Animated.View style={{ opacity: opacity, position: 'absolute', top: -1000, bottom: -1000, backgroundColor: '#00000066', left: -1000, right: -1000, zIndex: 1 }}></Animated.View>
-            <Animated.View style={{ opacity: opacity, maxHeight: 300, width: fontSize === 'll' ? 300 : fontSize === 'mm' ? 250 : 200, zIndex: 2, justifyContent: 'center', alignItems: 'center', backgroundColor: theme[color].bg, borderRadius: 15, paddingVertical: 20 }}>
-                {sortedList.length === 0 ? <Text style={{ color: theme[color].dddgrey }}>* 목록이 비었습니다</Text> :
 
+        <Modal
+            animated={true} animationType='fade' visible={starListOn} onRequestClose={() => setStarList(false)} transparent={true}
+        >
+            <Pressable onPress={() => { setStarList(false) }} s style={{ position: 'absolute', top: 0, bottom: 0, backgroundColor: color === 'dark' ? '#00000099' : '#00000066', left: 0, right: 0, zIndex: 4 }} />
+            <View style={{ position: 'absolute', right: 40, bottom: 40, maxHeight: 300, width: fontSize === 'll' ? 300 : fontSize === 'mm' ? 250 : 200, zIndex: 5, justifyContent: 'center', alignItems: 'center', backgroundColor: theme[color].bg, borderRadius: 15, paddingVertical: 20 }}>
+                {sortedList.length === 0 ? <Text style={{ color: theme[color].dddgrey }}>* 목록이 비었습니다</Text> :
                     <><View style={{ flexDirection: 'row', paddingBottom: 5, alignItems: 'center' }}>
                         <Text style={{ padding: 3, fontSize: fontTheme[fontSize].l, fontWeight: 600, color: theme[color].black }}>  꼭 사야 할 것 </Text>
                     </View>
@@ -56,6 +57,8 @@ export default function StarList({ opacity, list, setList, placeList, starListOn
                                     <Text style={{ color: theme[color].ddgrey, fontSize: fontTheme[fontSize].s, flexShrink: 0 }} >{(placeList.find((value, index) => value.id === item.place))?.text}</Text>
                                 </TouchableOpacity>)}
                         </ScrollView></>}
-            </Animated.View ></>
+            </View >
+
+        </Modal>
     )
 }
