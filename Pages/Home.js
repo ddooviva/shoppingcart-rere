@@ -536,9 +536,9 @@ export default function Home() {
             source={color === "light" ? require('../assets/paper.jpg') : require('../assets/paper-dark.jpg')}
             style={{ flex: 1, resizeMode: 'cover', justifyContent: 'center', zIndex: -2, width: '100%' }}
         >
-            <View style={{ zIndex: 3, position: 'absolute', bottom: 20, right: 20 }}>
-                <Pressable onPress={() => setStarList(!starList)} style={{ zIndex: 4, borderColor: !starList ? theme[color].llpoint : theme[color].dgrey, borderWidth: 1, backgroundColor: theme[color].bg, width: 50, height: 50, borderRadius: 35, justifyContent: 'center', alignItems: 'center' }}>
-                    <FontAwesome6 name={"star-of-life"} size={25} color={!starList ? theme[color].lpoint : theme[color].dgrey} />
+            <View style={{ zIndex: 3, position: 'absolute', bottom: 25, right: 20 }}>
+                <Pressable onPress={() => setStarList(true)} style={{ zIndex: 4, borderColor: theme[color].dgrey, borderWidth: 1, backgroundColor: theme[color].bg, width: 50, height: 50, borderRadius: 35, justifyContent: 'center', alignItems: 'center' }}>
+                    <FontAwesome6 name={"star-of-life"} size={25} color={theme[color].dgrey} />
                 </Pressable>
             </View>
             <Starlist opacity={fadeAnim} list={list} setList={setList} placeList={placeList} onRefresh={onRefresh} refreshing={refreshing} starListOn={starList} setStarList={setStarList} />

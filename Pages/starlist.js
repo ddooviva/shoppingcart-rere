@@ -6,6 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Keyboard } from "react-native";
 import { fontTheme } from "./font";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { FontAwesome6 } from "@expo/vector-icons";
 
 export default function StarList({ opacity, list, setList, placeList, starListOn, setStarList, onRefresh }) {
     const { color, setColor } = useColor();
@@ -42,8 +43,14 @@ export default function StarList({ opacity, list, setList, placeList, starListOn
         <Modal
             animated={true} animationType='fade' visible={starListOn} onRequestClose={() => setStarList(false)} transparent={true}
         >
+
+            <View style={{ zIndex: 6, position: 'absolute', bottom: 25, right: 20 }}>
+                <Pressable onPress={() => setStarList(false)} style={{ zIndex: 4, borderColor: theme[color].llpoint, borderWidth: 1, backgroundColor: theme[color].bg, width: 50, height: 50, borderRadius: 35, justifyContent: 'center', alignItems: 'center' }}>
+                    <FontAwesome6 name={"star-of-life"} size={25} color={theme[color].lpoint} />
+                </Pressable>
+            </View>
             <Pressable onPress={() => { setStarList(false) }} s style={{ position: 'absolute', top: 0, bottom: 0, backgroundColor: color === 'dark' ? '#00000099' : '#00000066', left: 0, right: 0, zIndex: 4 }} />
-            <View style={{ position: 'absolute', right: 40, bottom: 40, maxHeight: 300, width: fontSize === 'll' ? 300 : fontSize === 'mm' ? 250 : 200, zIndex: 5, justifyContent: 'center', alignItems: 'center', backgroundColor: theme[color].bg, borderRadius: 15, paddingVertical: 20 }}>
+            <View style={{ position: 'absolute', right: 40, bottom: 45, maxHeight: 300, width: fontSize === 'll' ? 300 : fontSize === 'mm' ? 250 : 200, zIndex: 5, justifyContent: 'center', alignItems: 'center', backgroundColor: theme[color].bg, borderRadius: 15, paddingVertical: 20 }}>
                 {sortedList.length === 0 ? <Text style={{ color: theme[color].dddgrey }}>* 목록이 비었습니다</Text> :
                     <><View style={{ flexDirection: 'row', paddingBottom: 5, alignItems: 'center' }}>
                         <Text style={{ padding: 3, fontSize: fontTheme[fontSize].l, fontWeight: 600, color: theme[color].black }}>  꼭 사야 할 것 </Text>
